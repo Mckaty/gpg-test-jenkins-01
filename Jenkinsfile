@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Execute Shell Script') {
+        stage('Decrypt GPG File from SCB') {
             steps {
                 sh 'chmod +x test-decrypt-02.sh'
                 sh './test-decrypt-02.sh'
