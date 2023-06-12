@@ -1,18 +1,21 @@
 pipeline {
     agent any
 
-    parameters {
-        file(name: 'UPLOAD_FILE', description: 'File to upload')
-    }
-
     stages {
-        stage('Upload File') {
+        stage('Choose File') {
             steps {
                 script {
-                    def uploadedFilePath = env.UPLOAD_FILE
-                    sh "echo Uploaded file path: $uploadedFilePath"
+                    def fileInput = input(
+                        message: 'Choose a file',
+                        parameters: [
+                            file(name: 'FILE_TO_USE', description: 'File to process')
+                        ]
+                    )
                     
-                    // Perform further actions with the uploaded file
+                    def selectedFilePath = fileInput['FILE_TO_USE']
+                    sh "echo Selected file path: $selectedFilePath"
+                    
+                    // Perform further actions with the selected file
                 }
             }
         }
