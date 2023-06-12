@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Execute Shell Script') {
             steps {
-                sh '/home/ubuntu/songyot-gpg-01/test-decrypt-02.sh'
+                sh 'sudo /home/ubuntu/songyot-gpg-01/test-decrypt-02.sh'
             }
         }
 
