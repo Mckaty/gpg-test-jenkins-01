@@ -13,7 +13,7 @@ pipeline {
     stage('Import Decrypt') {
       steps {
         script {
-          sh "echo "Hello Decrypt""
+          echo "Hello Decrypt"
         }
       }
     }
