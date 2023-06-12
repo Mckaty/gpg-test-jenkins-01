@@ -2,46 +2,36 @@ pipeline {
     agent any
 
     stages {
-        stage('Decrypt Files') {
+        stage('Execute Shell Script') {
             steps {
-                script {
-                    def s3Bucket = 'pgp-decrypted-files-12392023'
-                    def inboxPrefix = 'inbox/'
-                    def outboxPrefix = 'outbox/'
-                    def s3Client = AmazonS3.create()
+                sh '/home/ubuntu/songyot-gpg-01/test-decrypt-02.sh'
+            }
+        }
 
-                    def objectListing = s3Client.listObjects(bucketName: s3Bucket, prefix: inboxPrefix, delimiter: '/')
+        stage('List S3 Outbox') {
+            steps {
+                withAWS(region: 'ap-southeast-1') {
+                    script {
+                        def s3Client = aws.s3()
 
-                    objectListing.objectSummaries.each { fileSummary ->
-                        if (fileSummary.key.endsWith('.gpg')) {
-                            def fileName = fileSummary.key.substringAfterLast('/')
-                            def decryptedFilePath = outboxPrefix + fileName.substring(0, fileName.lastIndexOf('.'))
-
-                            def gpgFile = new File(fileName)
-                            s3Client.getObject(bucketName: s3Bucket, key: fileSummary.key, destination: gpgFile)
-
-                            // Decrypt the gpg file using your decryption logic here
-
-                            s3Client.putObject(bucketName: s3Bucket, key: decryptedFilePath, file: gpgFile)
-                            gpgFile.delete()
+                        def objects = s3Client.listObjects(bucket: 'your-bucket-name', prefix: 'pgp-decrypted-files-12392023/outbox/')
+                        objects.each { s3Object ->
+                            println(s3Object.key)
                         }
                     }
                 }
             }
         }
 
-        stage('Delete Original Files') {
+        stage('List S3 Inbox') {
             steps {
-                script {
-                    def s3Bucket = 'pgp-decrypted-files-12392023'
-                    def inboxPrefix = 'inbox/'
-                    def s3Client = AmazonS3.create()
+                withAWS(region: 'ap-southeast-1') {
+                    script {
+                        def s3Client = aws.s3()
 
-                    def objectListing = s3Client.listObjects(bucketName: s3Bucket, prefix: inboxPrefix, delimiter: '/')
-
-                    objectListing.objectSummaries.each { fileSummary ->
-                        if (fileSummary.key.endsWith('.gpg')) {
-                            s3Client.deleteObject(bucketName: s3Bucket, key: fileSummary.key)
+                        def objects = s3Client.listObjects(bucket: 'your-bucket-name', prefix: 'pgp-decrypted-files-12392023/inbox/')
+                        objects.each { s3Object ->
+                            println(s3Object.key)
                         }
                     }
                 }
