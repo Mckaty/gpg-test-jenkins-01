@@ -19,5 +19,6 @@ pipeline {
             steps {
                 sh 'aws s3 ls s3://pgp-decrypted-files-12392023/outbox/ '
             }
+        }
     }
-}
+}    
