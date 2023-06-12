@@ -1,17 +1,18 @@
 pipeline {
     agent any
 
+    parameters {
+        file(name: 'UPLOAD_FILE', description: 'File to upload')
+    }
+
     stages {
-        stage('Import GPG Keys') {
+        stage('Upload File') {
             steps {
-                withCredentials([
-                    file(credentialsId: 'privateKey', variable: 'PRIVATE_KEY_FILE'),
-                    file(credentialsId: 'publicKey', variable: 'PUBLIC_KEY_FILE')
-                ]) {
-                    sh """
-                    gpg --import ${PRIVATE_KEY_FILE}
-                    gpg --import ${PUBLIC_KEY_FILE}
-                    """
+                script {
+                    def uploadedFilePath = env.UPLOAD_FILE
+                    sh "echo Uploaded file path: $uploadedFilePath"
+                    
+                    // Perform further actions with the uploaded file
                 }
             }
         }
