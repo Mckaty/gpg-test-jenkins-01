@@ -2,25 +2,50 @@ pipeline {
     agent any
 
     stages {
-        stage('Choose File') {
+        stage('Decrypt Files') {
             steps {
                 script {
-                    def fileInput = input(
-                        message: 'Choose a file',
-                        parameters: [
-                            file(name: 'FILE_TO_USE', description: 'File to process')
-                        ]
-                    )
-                    
-                    def selectedFilePath = fileInput['FILE_TO_USE']
-                    sh "echo Selected file path: $selectedFilePath"
-                    
-                    // Perform further actions with the selected file
+                    def s3Bucket = 'pgp-decrypted-files-12392023'
+                    def inboxPrefix = 'inbox/'
+                    def outboxPrefix = 'outbox/'
+                    def s3Client = AmazonS3.create()
+
+                    def objectListing = s3Client.listObjects(bucketName: s3Bucket, prefix: inboxPrefix, delimiter: '/')
+
+                    objectListing.objectSummaries.each { fileSummary ->
+                        if (fileSummary.key.endsWith('.gpg')) {
+                            def fileName = fileSummary.key.substringAfterLast('/')
+                            def decryptedFilePath = outboxPrefix + fileName.substring(0, fileName.lastIndexOf('.'))
+
+                            def gpgFile = new File(fileName)
+                            s3Client.getObject(bucketName: s3Bucket, key: fileSummary.key, destination: gpgFile)
+
+                            // Decrypt the gpg file using your decryption logic here
+
+                            s3Client.putObject(bucketName: s3Bucket, key: decryptedFilePath, file: gpgFile)
+                            gpgFile.delete()
+                        }
+                    }
                 }
             }
         }
-        
-        // Add more stages for your pipeline
-        
+
+        stage('Delete Original Files') {
+            steps {
+                script {
+                    def s3Bucket = 'pgp-decrypted-files-12392023'
+                    def inboxPrefix = 'inbox/'
+                    def s3Client = AmazonS3.create()
+
+                    def objectListing = s3Client.listObjects(bucketName: s3Bucket, prefix: inboxPrefix, delimiter: '/')
+
+                    objectListing.objectSummaries.each { fileSummary ->
+                        if (fileSummary.key.endsWith('.gpg')) {
+                            s3Client.deleteObject(bucketName: s3Bucket, key: fileSummary.key)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
