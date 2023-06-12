@@ -10,7 +10,7 @@ OBJECT_PREFIX="inbox/"
 OBJECT_PREFIX_AFTER="outbox/"
 
 # Set the local directory where decrypted files will be saved
-LOCAL_DIR="/home/ubuntu/songyot-gpg-01/save/decrypted-files/"
+LOCAL_DIR="/tmp/decrypted-files/"
 
 # Download the encrypted files from S3
 aws s3 cp "s3://${S3_BUCKET}/${OBJECT_PREFIX}" /tmp --recursive --exclude "*" --include "*.gpg"
