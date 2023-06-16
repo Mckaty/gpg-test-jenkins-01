@@ -26,7 +26,8 @@ for file in /tmp/*.gpg; do
 done
 
 # Remove the temporary encrypted files
-rm /tmp/*.gpg
+#rm /tmp/*.gpg
+rm /tmp/decrypted-files/*.gpg
 
 # Display a success message
 echo "Decryption complete. Files saved in ${LOCAL_DIR}"
